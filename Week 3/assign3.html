@@ -1,0 +1,208 @@
+<!DOCTYPE html
+	PUBLIC "-//W3C//DTD HTML 4.01//EN"
+	"http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv='Content-Type' content='text/html;charset=UTF-8'>
+<title>Assignment 3. Installing and modifying software</title>
+</head>
+
+<body>
+
+<h1>Assignment 3. Installing and modifying software</h1>
+
+<h2>Laboratory: Installing a small change to a big package</h2>
+
+<p>Keep a log in the file <code>lab3.txt</code> of what you do in the
+lab so that you can reproduce the results later. This should not
+merely be a transcript of what you typed: it should be more like a
+true lab notebook, in which you briefly note down what you did and
+what happened.</p>
+
+<p>You're helping to build an application containing a shell script
+that invokes the <a
+href='http://www.opengroup.org/onlinepubs/009695399/utilities/ls.html'><code>ls</code></a>
+command to get file status.
+Your application is running atop the Maroon Chapeau Enterprise Linux 5 distribution, which uses the <code>ls</code> implementation supplied by <a href='http://www.gnu.org/software/coreutils/'>Coreutils</a> 7.6.
+You've been
+running into the problem that for some users <code>ls</code> generates
+output that looks like this:</p>
+
+<pre><code>$ ls -l /bin/bash
+-rwxr-xr-x 1 root root 729040 2009-03-02 06:22 /bin/bash
+</code></pre>
+
+<p>The users want the traditional Unix format, which looks like this:</p>
+
+<pre><code>$ ls -l /bin/bash
+-rwxr-xr-x 1 root root 729040 Mar  2  2009 /bin/bash
+</code></pre>
+
+<p>You've been asked to look into the problem and fix it.</p>
+
+<p>You discover that the problem is that in some cases users set their
+locale to a value like <code>en_US.UTF-8</code>, for example, by
+setting the <code>LC_ALL</code> environment variable to that value:
+
+<pre><code>$ export LC_ALL='en_US.UTF-8'
+</code></pre>
+
+<p>Users who have done this get the YYYY-MM-DD date instead of the
+traditional Unix date.</p>
+
+<p>You nose around on the net, and discover that the problem is that
+the locale files for Coreutils are not generated properly
+(see <a href='http://lists.gnu.org/archive/html/bug-coreutils/2009-09/msg00398.html'>Jim
+Meyering's message of 2009-09-29</a>,
+also <a href='http://www.mail-archive.com/bug-coreutils@gnu.org/msg17915.html'>archived</a>
+in case the primary web site is down). Getting these files generated
+and distributed to all your clients seems like a bit of a hassle, so
+instead, you decide to patch the <code>ls</code> program instead,
+using <a href='http://lists.gnu.org/archive/html/bug-coreutils/2009-09/msg00410.html'>a
+temporary workaround patch published by P&aacute;draig Brady</a>
+(also <a href='http://www.mail-archive.com/bug-coreutils@gnu.org/msg17927.html'>archived</a>).</p>
+
+<p>Try Brady's workaround, as follows:</p>
+
+<ol>
+
+<li>Grab <a
+href='ftp://ftp.gnu.org/gnu/coreutils/coreutils-7.6.tar.gz'>Coreutils 7.6</a>.</li>
+
+<li>Compile and install your copy of
+Coreutils into a temporary directory of your own. Note
+any problems you run into.</li>
+
+<li>Reproduce the bug on your machine with the unmodified version of coreutils.
+You may need to use the <a href='http://man.he.net/man8/locale-gen'><code>locale-gen</code></a> program to generate
+the <code>en_US.UTF-8</code> locale.</li>
+
+<li>Use Emacs or Vim to apply
+Brady's patch.</li>
+
+<li>Type the command <code>make</code> at the top level of your source
+tree, so that you build (but do not install) the fixed version. For each
+command that gets executed, explain why it needed to be executed (or
+say that it wasn't neeeded).</li>
+
+<li>Make sure your change fixes the bug, by testing that the
+modified <code>ls</code> works on your test case and that the
+installed <code>ls</code> doesn't. Test on a file that has been
+recently modified, and on a file that is at least a year old. You can
+use
+the <code><a href='http://www.opengroup.org/onlinepubs/009695399/utilities/touch.html'>touch</a></code>
+command to artficially mark a file as being a year old.</li>
+</ol>
+
+<p>Q1. Why did Brady's patch remove the line
+"<code>case_long_iso_time_style:</code>"?  Was it necessary to remove
+that line? Explain.</p>
+
+<p>Q2. If your company adopts this patched version of Coreutils
+instead of the default one, what else should you watch out for? Might
+this new version of Coreutils introduce other problems with your
+application, perhaps in countries where users don't speak English and
+don't understand English-format dates?</p>
+
+<h2>Homework: Generating random lines from a file</h2>
+
+<p>Consider the Python script
+<a href='randline.py'><code>randline.py</code></a>.</p>
+
+<p>Q3. What happens when this script is invoked on an empty file like
+<code>/dev/null</code>, and why?</p>
+
+<p>Q4. What happens when this script is invoked with Python 3 rather
+than Python 2, and why? (You can run Python 3 on the SEASnet hosts by
+using the command <samp>python3</samp> instead
+of <samp>python</samp>.)</p>
+
+<p>Modify <code>randline.py</code> so that it takes an arbitrary
+positive number of input file arguments, not just one. If an input file ends
+in a non-newline character, your code should silently act as if a
+newline were appended to the file. As with the
+original <code>randline.py</code>, your program should report an error
+if given no input file arguments.</p>
+
+<p>Currently, if the input contains duplicate lines,
+<code>randline.py</code> generates a copy of each line with probability
+proportional to the number of duplicates. Modify <code>randline.py</code>
+so that it also accepts a new option <code>-u</code> (long version
+<code>--unique</code>); when this option is used, duplicate lines in
+the input are ignored, so the input is treated as if it has no
+duplicates, and the probability that a line is generated is
+independent of the number of copies of that line in the
+input. Duplicate lines should be detected even when they are not
+adjacent in the input. Two lines are considered duplicates if they
+contain the same bytes in the same order, not counting the trailing
+newline.</p>
+
+<p>Also, currently <code>randline.py</code> outputs lines with replacement;
+for example, it's possible that it will output the first input line
+two or more times. Modify <code>randline.py</code> so that it accepts
+a new option <code>-w</code> (long
+version <code>--without-replacement</code>) which causes it to output
+lines without replacement: for example, the first input line is copied
+to the output at most once. If the input contains duplicate lines and
+the <code>-u</code> option is not used, the
+output can contain the same duplicates, but no more duplicates than
+what appeared in the input.
+With the <code>-w</code> option it is an error if the
+input file contains fewer than <code>NUMLINE</code> lines, just as
+it is already an error without the new option to invoke
+<code>randline.py</code> on an empty file and ask it for one or more
+lines of output. You need not worry about the exact diagnostic you
+generate for this new error, so long as you generate some diagnostic.</p>
+
+<p>The <code>-u</code> and <code>-w</code> options can both be specified;
+if so, duplicates are implicitly removed from the input before the
+output lines are generated without replacement.  It is therefore an
+error if the number of non-duplicate input lines is less than the
+number of output lines requested.</p>
+
+<p>Your modified version of <code>randline.py</code> should use only
+the <samp>string</samp> module and the modules
+that <code>randline.py</code> already uses (it should not import any
+other modules). Don't forget to change its usage message to
+accurately describe the modified behavior.</p>
+
+<p>Port your modified <code>randline.py</code> to Python 3. Make sure that it
+still works with Python 2. Don't rewrite it from scratch; make as few
+changes as is reasonable.</p>
+
+<h2>Submit</h2>
+
+<p>Submit the following files.</p>
+
+<ul>
+
+<li>The file <code>lab3.txt</code> as described in the lab.</li>
+
+<li>A file <code>hw3.txt</code> containing the answer to questions
+Q1 through Q4 noted above.</li>
+
+<li>The modified file <code>randline.py</code> as described
+in the homework.</li>
+
+</ul>
+
+<p>All files should be ASCII text files, with no
+carriage returns, and with no more than 80 columns per line. The shell
+command:</p>
+
+<pre><code>expand lab3.txt hw3.txt randline.py | awk '/\r/ || 80 &lt; length'
+</code></pre>
+
+<p>should output nothing.</p>
+
+<hr>
+<address>
+ &copy; 2005, 2007&ndash;2013 <a href='../mail-eggert.html'>Paul Eggert</a>.
+ See <a href='../copyright.html'>copying rules</a>.<br>
+
+ $Id: assign3.html,v 1.20 2013/10/17 21:42:41 eggert Exp $
+
+</address>
+
+</body>
+</html>

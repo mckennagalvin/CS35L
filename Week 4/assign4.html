@@ -1,0 +1,248 @@
+<!DOCTYPE html
+	PUBLIC "-//W3C//DTD HTML 4.01//EN"
+	"http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv='Content-Type' content='text/html;charset=UTF-8'>
+<title>Assignment 4. Change management</title>
+</head>
+
+<body>
+
+<h1>Assignment 4. Change management</h1>
+
+<h2>Useful pointers</h2>
+
+<ul>
+ <li>Michael Johnson, <a href='http://www.linuxjournal.com/article/1237'>Diff,
+  Patch, and Friends</a>, Linux Journal 28 (1996-08)</li>
+ <li>Larry Ayers, <a href='http://linuxgazette.net/issue32/ayers1.html'>
+  Patch for Beginners</a>, Linux Gazette 32 (1998-09)</li>
+ <li>Linus Torvalds, Jun Hamano <em>et al.</em>,
+  <a href='http://git-scm.com/'>Git - local branching on the cheap</a></li>
+ <li>Scott Chacon, <a href='http://git-scm.com/book'>Pro Git</a> (2009)</li>
+ <li>Jacob Gube, <a href='http://sixrevisions.com/resources/git-tutorials-beginners/'>Top
+  10 Git Tutorials for Beginners</a> (2011)</li>
+ <li>David MacKenzie, Paul Eggert, and Richard Stallman,
+  <a href='http://www.gnu.org/software/diffutils/manual/html_node/index.html'>Comparing
+   and merging files</a>, version 3.3 (2013-03-23)</li>
+</ul>
+
+<p>You&rsquo;re helping to develop an operating system and command set that
+as part of its acceptance test is supposed to be used by a large
+government agency. The agency has lots of requirements, some sensible
+and some persnickety, and one of these requirements is that
+applications must use characters properly from
+the <a href='http://en.wikipedia.org/wiki/Unicode'>Unicode</a>
+character set. In particular, applications must use the Unicode
+character &ldquo;<samp>`</samp>&rdquo; (grave
+accent, <a href='http://www.fileformat.info/info/unicode/char/60/index.htm'>U+0060</a>)
+only as a spacing accent character.</p>
+
+<p>Unfortunately, one of your
+applications, <a href='http://www.gnu.org/software/diffutils/'>GNU
+Diffutils</a>, regularly uses &ldquo;<samp>`</samp>&rdquo; as a quoting character
+in diagnostics. For example, the command &ldquo;<samp>diff
+. -</samp>&rdquo; outputs the diagnostic &ldquo;<samp>diff: cannot
+compare `-' to a directory</samp>&rdquo;, and this misuse of
+&ldquo;<samp>`</samp>&rdquo; violates your customer&rsquo;s requirements. You need to
+change Diffutils so that it outputs &ldquo;<samp>diff: cannot compare
+'-' to a directory</samp>&rdquo; instead, using an apostrophe
+(<a href='http://www.fileformat.info/info/unicode/char/27/index.htm'>U+0027</a>)
+for both opening and closing quote. You don&rsquo;t want to use fancier
+quoting characters such as &ldquo;<samp>&lsquo;</samp>&rdquo; and
+&ldquo;<samp>&rsquo;</samp>&rdquo; (left and right single quotation
+marks, <a href='http://www.fileformat.info/info/unicode/char/2018/index.htm'>U+2018</a>
+and <a href='http://www.fileformat.info/info/unicode/char/2019/index.htm'>U+2019</a>)
+because they are
+not <a href='http://en.wikipedia.org/wiki/ASCII'>ASCII</a> characters
+and another customer requirement is that the programs must work in
+ASCII-only environments.</p>
+
+<p>The good news is that the Diffutils maintainers have run into a
+similar problem, and have a patch called &ldquo;maint: quote 'like
+this' or "like this", not `like this'&rdquo; that does what you
+want. The bad news is that your customer has
+specified Diffutils version 3.0, and the patch that you want
+is not in version 3.0. Also, your customer is conservative and
+wants a minimal patch so that it&rsquo;s easy to audit, whereas the
+Diffutils maintainers&rsquo; patch also affects commentary and documentation
+which your customer doesn&rsquo;t need or want changed.</p>
+
+
+<h2>Laboratory: Managing a backported change</h2>
+
+<p>As usual, keep a log in the file <samp>lab4.txt</samp> of what you
+do in the lab so that you can reproduce the results later. This should
+not merely be a transcript of what you typed: it should be more like a
+true lab notebook, in which you briefly note down what you did and
+what happened.</p>
+
+<ol>
+
+<li>Get a copy of the Diffutils repository, in Git format,
+from <a href='http://savannah.gnu.org/git/?group=diffutils'>its main
+Savannah repository</a>.</li>
+
+<li>Get a log of changes to Diffutils&rsquo; master branch using the
+&ldquo;<samp>git log</samp>&rdquo; command, and put it into the file
+<samp>git-log.txt</samp>.</li>
+
+<li>Generate a list of tags used for Diffutils using the
+&ldquo;<samp>git tag</samp>&rdquo; command, and put it into the
+file <samp>git-tags.txt</samp></li>
+
+<li>Find the commit entitled &ldquo;maint: quote 'like this' or "like
+this", not `like this'&rdquo;, and generate a patch for that commit,
+putting it into the file <samp>quote-patch.txt</samp>.</li>
+
+<li>Check out version 3.0 of Diffutils from your repository.</li>
+
+<li>Use the <samp>patch</samp> command to
+apply <samp>quote-patch.txt</samp> to version 3.0. In some cases it
+will not be able to figure out what file to patch; skip past those by
+typing RETURN. Record any problems you had in applying the patch.</li>
+
+<li>Use the <samp>git status</samp> command to get an overview of what
+happened.</li>
+
+<li>Learn how to use the Emacs functions
+<a href='http://www.gnu.org/software/emacs/manual/html_node/emacs/Old-Revisions.html'><samp>vc-diff</samp></a>
+(<samp>C-x v =</samp>) and
+<a href='http://www.gnu.org/software/emacs/manual/html_node/emacs/VC-Undo.html'><samp>vc-revert</samp></a>
+(<samp>C-x v u</samp>). When you're in the <samp>*vc-diff*</samp>
+buffer generated by <samp>vc-diff</samp>,
+use <samp>describe-mode</samp> (<samp>C-h m</samp>) to find out the
+Emacs functions that you can use there, and in particular learn how to use
+the
+<a href='http://www.gnu.org/software/emacs/manual/html_node/emacs/Diff-Mode.html'><samp>diff-apply-hunk</samp></a>
+(<samp>C-c C-a</samp>) and
+<samp>diff-goto-source</samp> (<samp>C-c C-c</samp>) functions.</li>
+
+<li>Use Emacs to revert all the changes to files other than <samp>.c</samp>
+files, since you want only changes to <samp>.c</samp> files. Also,
+<strong>and don't forget this part</strong>,
+undo all the changes to <samp>.c</samp> files other than changes to
+character string constants, as the character-string changes are the
+only changes that you want; this may require editing some files by
+hand.</li>
+
+<li>Use Emacs to examine the
+files <samp>src/*.c.rej</samp> carefully, and copy rejected patches
+into the corresponding <samp>.c</samp> files as needed.</li>
+
+<li>Remove all untracked files that <samp>git status</samp> warns
+you about, since you don&rsquo;t plan on adding any files in your patch.</li>
+
+<li>When you&rsquo;re done with the above, <samp>git status</samp> should
+report a half-dozen modified files, and <samp>git diff</samp> should
+output a patch that is three or four hundred lines long. Put that
+patch into a file <samp>quote-3.0-patch.txt</samp>.</li>
+
+<li>Build the resulting modified version of Diffutils,
+using the commands described in the file <samp>README-hacking</samp>
+(skipping the part about <a href='http://cvs.nongnu.org/'>CVS</a>; CVS
+is obsolescent), and verify that it does the right thing with the
+&ldquo;<samp>diff . -</samp>&rdquo; scenario, as well as with
+&ldquo;<samp>diff --help</samp>&rdquo;.</li>
+
+<li>Do a sanity test using the modified version
+of Diffutils that you just built, by using the
+just-built <samp>diff</samp> to compare the source code of Diffutils
+3.0 to the source code of your modified version. Put the former source
+code into a directory <samp>diffutils-3.0</samp> and the latter source
+code into a directory <samp>diffutils-3.0-patch</samp>, and run your
+implementation of <samp>diff</samp> with the command
+&ldquo;<samp><var>D</var>/diff -pru diffutils-3.0 diffutils-3.0-patch
+&gt;quote-3.0-test.txt</samp>&rdquo;,
+where the <samp><var>D</var></samp> is the directory containing your
+<samp>diff</samp> implementation.</li>
+
+<li>Use <samp>diff</samp> to compare the contents
+of <samp>quote-3.0-test.txt</samp> and
+<samp>quote-3.0-patch.txt</samp>. Are the files identical? If not, are
+the differences innocuous?</li>
+</ol>
+
+<h2>Homework: Verifying and publishing a backported change</h2>
+
+<p>You&rsquo;re happy with the code that you wrote
+in your lab, but now you&rsquo;d like to publish this patch,
+in a form similar to that presented in the original patch,
+so that others can use it.</p>
+
+<ol>
+
+<li>Maintain a file <samp>HI4.txt</samp> that logs the actions you do in solving the homework. This is like your lab notebook <samp>lab4.txt</samp>, except it&rsquo;s for the homework instead of the lab.</li>
+
+<li>Check out version 3.0 of Diffutils from your repository,
+into a new branch named &ldquo;<samp>quote</samp>&rdquo;.</li>
+
+<li>Install your change into this new branch, by running
+the <samp>patch</samp> command with your patch
+<samp>quote-3.0-patch.txt</samp> as input.</li>
+
+<li> Learn how to use the Emacs function
+<a href='http://www.gnu.org/software/emacs/manual/html_node/emacs/Change-Log-Commands.html'><samp>add-change-log-entry-other-window</samp></a>
+(<samp>C-x 4 a</samp>).</li>
+
+<li>Use this Emacs function to compose an appropriate ChangeLog entry
+for your patch, by adapting the change log from the original patch.</li>
+
+<li>Commit your changes to the new branch, using the
+ChangeLog entry as the commit message.</li>
+
+<li>Use the command &ldquo;<samp>git format-patch</samp>&rdquo;
+to generate a file <samp>formatted-patch.txt</samp>.
+This patch should work
+without having to fix things by hand afterwards.</li>
+
+<li>Your teaching assistant will assign you a partner, who will also
+generate a patch. Verify that your partner's patch works, by checking
+out version 3.0 again
+into a new temporary branch <samp>partner</samp>, applying the patch with
+the command &ldquo;<samp>git am</samp>&rdquo;, and building the
+resulting system, checking that it works with &ldquo;<samp>make
+check</samp>&rdquo;.</li>
+
+<li>Verify that your ChangeLog entry works, by running
+the command &ldquo;<samp>make distdir</samp>&rdquo; and inspecting
+the resulting <samp>diffutils*/ChangeLog</samp> file.</li>
+
+</ol>
+
+<h2>Submit</h2>
+
+<p>Submit a compressed tarball <samp>hw4.tgz</samp> containing
+the following files.</p>
+
+<ul>
+
+<li>The files <samp>lab4.txt</samp>, <samp>git-log.txt</samp>,
+<samp>git-tags.txt</samp>, <samp>quote-patch.txt</samp>,
+and <samp>quote-3.0-patch.txt</samp> as described in the lab.</li>
+
+<li>The files <samp>hw4.txt</samp>
+and <samp>formatted-patch.txt</samp> as described in the
+homework.</li>
+
+</ul>
+
+<p>All <samp>.txt</samp> files should be ASCII text files, with no
+carriage returns. You can create the tarball with the command:</p>
+
+<pre><samp>tar czf hw4.tgz lab4.txt git-log.txt git-tags.txt \
+  quote-patch.txt quote-3.0-patch.txt hw4.txt formatted-patch.txt
+</samp></pre>
+
+<hr>
+<address>
+ &copy; 2005, 2007&ndash;2014 <a href='../mail-eggert.html'>Paul Eggert</a>.
+ See <a href='../copyright.html'>copying rules</a>.<br>
+
+ $Id: assign4.html,v 1.23 2014/04/21 17:16:29 eggert Exp $
+
+</address>
+
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html
+	PUBLIC "-//W3C//DTD HTML 4.01//EN"
+	"http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv='Content-Type' content='text/html;charset=UTF-8'>
+<title>Assignment 5. C programming and debugging</title>
+</head>
+
+<body>
+
+<h1>Assignment 5. C programming and debugging</h1>
+
+<h2>Useful pointers</h2>
+
+<ul>
+ <li>Ian Cooke,
+  <a href='http://people.cs.uchicago.edu/~iancooke/osstuff/ccc.html'>C
+  for C++ Programmers</a> (2004-06-08). Note that it describes C89;
+  C11, the current version of C, supports <samp>//</samp> comments,
+  declarations after statements, and (if you include
+  <samp>&lt;stdbool.h&gt;</samp>) <samp>bool</samp>.</li>
+ <li>Steve Holmes, <a href='http://www.its.strath.ac.uk/courses/c/'>C
+  Programming</a> (1995)</li>
+ <li>Parlante, Zelenski, et. al,
+  <a href='http://cslibrary.stanford.edu/107/UnixProgrammingTools.pdf'>
+  Unix Programming Tools</a> (2001), section 3 &mdash; <samp>gdb</samp>.</li>
+ <li><a
+  href='http://valgrind.org/docs/quick-start.html'>Valgrind Quick Start
+  Guide</a> (2013-10-31)</li>
+ <li><a
+  href='http://valgrind.org/docs/manual/manual.html'>Valgrind User Manual</a>
+  (2013-10-31)</li>
+ <li>Richard Stallman, Roland Pesch, Stan Shebs, <i>et al.</i>,
+  <a href='http://sourceware.org/gdb/download/onlinedocs/gdb/'>Debugging
+  with <span style="font-variant: small-caps;">gdb</span></a> (2014)</li>
+</ul>
+
+<h2>Laboratory: Debugging a C program</h2>
+
+<p>As usual, keep a log in the file <samp>lab5.txt</samp> of what you
+do in the lab so that you can reproduce the results later. This should
+not merely be a transcript of what you typed: it should be more like a
+true lab notebook, in which you briefly note down what you did and
+what happened.</p>
+
+<p>You're helping to maintain an old stable version
+of <samp>coreutils</samp>,
+but <a href='coreutils-with-bug.tar.gz'>that version</a> has a bug in
+its implementation of the <samp>ls</samp> program.
+(Actually, it has two bad bugs, but for now we'll just look
+at the first one.)</p>
+
+<p>The bug is that <samp>ls -t</samp> mishandles files whose time stamps are
+very far in the past. It seems to act as if they are in the future.
+For example:</p>
+
+<pre><samp>$ tmp=$(mktemp -d)
+$ cd $tmp
+$ touch -d '1918-11-11 11:00 GMT' wwi-armistice
+$ touch now
+$ sleep 1
+$ touch now1
+$ TZ=UTC0 ls -lt --full-time wwi-armistice now now1
+-rw-r--r-- 1 eggert csfac 0 1918-11-11 11:00:00.000000000 +0000 wwi-armistice
+-rw-r--r-- 1 eggert csfac 0 2013-04-29 16:42:48.358233532 +0000 now1
+-rw-r--r-- 1 eggert csfac 0 2013-04-29 16:42:47.355197103 +0000 now
+$ cd
+$ rm -fr $tmp
+</samp></pre>
+
+<p>Build this old version of coreutils as-is, and then again with <a href='coreutils.diff'>this renaming patch</a>. What problems did you have when building it as-is, and why did the renaming patch fix them?</p>
+
+<p>Reproduce the problem. Use a debugger to figure out what went wrong and to fix the
+corresponding source file.</p>
+
+<p>Construct a new patch file <samp>lab5.diff</samp> containing your
+coreutils fixes, in the form of a ChangeLog entry followed by a <samp>diff
+-u</samp> patch.</p>
+
+<p>Also, try to reproduce the problem in your home directory on the
+SEASnet Linux servers, instead of using the <samp>$tmp</samp> directory.
+When running the above test case, use the
+already-installed <samp>touch</samp> and <samp>ls</samp> utilities
+instead of the old version of coreutils. How well does SEASnet do?</p>
+
+<h2>Homework: Sorting encrypted text</h2>
+
+<p>The basic idea is that we want to sort encoded data without
+decoding and encoding it. That is, our input is an encoded file, and
+we could compute the output by decoding the input, sorting the decoded
+data, and then encoding the resulting output&mdash;except that we
+do not want to encode or decode anything.</p>
+
+<p>Write a C function <samp>rot13cmp</samp> that takes two arguments
+<samp>a</samp> and <samp>b</samp> as input and returns
+an <samp>int</samp> result that is negative, zero, or positive
+depending on whether <samp>a</samp> is less than, equal to, or greater
+than <samp>b</samp>. Each argument is of type <samp>char const
+*</samp>, and each points to an array of non-newline bytes that is
+followed by a newline byte. Use standard byte-by-byte lexicographic
+comparison on the non-newline bytes, in the style of
+the <a href='http://www.opengroup.org/onlinepubs/9699919799/functions/memcmp.html'><samp>memcmp</samp></a>
+function, except that you should assume that both arrays are
+<a href='http://en.wikipedia.org/wiki/ROT13'>ROT13</a>
+encoded and should return the equivalent of
+running <samp>memcmp</samp> on the corresponding unencoded
+arrays. If one array is a prefix of the other, then
+consider the shorter to be less than the longer. The newline bytes
+are not considered to be part of either array, so they do not
+participate in the comparison.</p>
+
+<p>For example, <samp>rot13cmp ("\0Dhvpx23\n", "\0Whzcf!\n")</samp>
+should return a positive <samp>int</samp>
+because <samp>"\0Dhvpx23"</samp> is the ROT13 encoding
+of <samp>"\0Quick23"</samp> and <samp>"\0Whzcf!"</samp> the ROT13
+encoding of <samp>"\0Jumps!"</samp>, and <samp>"\0Quick23"</samp> is
+greater than <samp>"\0Jumps!"</samp> in the ASCII collating sequence.
+As the example demonstrates, null bytes <samp>'\0'</samp> are allowed
+in the byte arrays and do contribute to the comparison.</p>
+
+<p>Use your C function to write a program <samp>srot13</samp> that
+reads from standard input in ROT13 format, and writes a sorted version
+to standard output in the same format. Your program should do all the
+sorting work itself, by calling <samp>rot13cmp</samp>. If standard
+input ends in a partial record that does not have a trailing newline,
+your program should behave as if a newline byte were appended to the
+input.</p>
+
+<p>Use <a
+href='http://www.opengroup.org/onlinepubs/9699919799/basedefs/stdio.h.html'><samp>&lt;stdio.h&gt;</samp></a>
+functions to do I/O. Use <a
+href='http://www.opengroup.org/onlinepubs/9699919799/functions/malloc.html'><samp>malloc</samp></a>,
+<a
+href='http://www.opengroup.org/onlinepubs/9699919799/functions/realloc.html'><samp>realloc</samp></a>
+and <a
+href='http://www.opengroup.org/onlinepubs/9699919799/functions/free.html'><samp>free</samp></a>
+to allocate enough storage to hold all the input, and use <a
+href='http://www.opengroup.org/onlinepubs/9699919799/functions/qsort.html'><samp>qsort</samp></a>
+to sort the data. Do not assume that the input file is not growing:
+some other process may be appending to it while you're reading, and
+your program should continue to read until it reaches end of file. For
+example, your program should work on the
+file <samp>/proc/self/maps</samp>, a "file" that is constantly
+mutating: it always appears to be of size 0 when you <samp>ls</samp>
+it, but it always contains nonempty contents if you read it. You
+should make sure your program works on empty files, as well as on
+files that are relatively large, such
+as <samp>/usr/local/cs/jdk*/jre/lib/rt.jar</samp> on SEASnet.</p>
+
+<p>If the program encounters an error of any kind (including
+input, output or memory allocation failures, it should report the error to
+<samp>stderr</samp> and exit with status 1; otherwise, the program
+should succeed and exit with status 0. The program need not report
+<samp>stderr</samp> output errors.</p>
+
+<p>For example, the shell command:</p>
+
+<pre><samp><a href='http://pubs.opengroup.org/onlinepubs/9699919799/utilities/printf.html'>printf</a> '\0Gur\n\0Dhvpx\n\0Oebja\n\0sbk\n\twhzcf\n\tbire\n\tgur\n\tynml\n\tqbt.' |
+./srot13 |
+<a href='http://pubs.opengroup.org/onlinepubs/9699919799/utilities/od.html'>od</a> -c
+</samp></pre>
+
+<p>should output:</p>
+
+<pre><samp>0000000  \0   O   e   b   j   a  \n  \0   D   h   v   p   x  \n  \0   G
+0000020   u   r  \n  \0   s   b   k  \n  \t   q   b   t   .  \n  \t   w
+0000040   h   z   c   f  \n  \t   y   n   m   l  \n  \t   b   i   r   e
+0000060  \n  \t   g   u   r  \n
+0000066
+</samp></pre>
+
+<p>because decoding <samp>srot13</samp>'s input (with a trailing
+newline appended) yields:</p>
+
+<pre><samp>^@The
+^@Quick
+^@Brown
+^@fox
+^Ijumps
+^Iover
+^Ithe
+^Ilazy
+^Idog.
+</samp></pre>
+
+<p>where <samp>^@</samp> denotes a null byte <samp>'\0'</samp>,
+and <samp>^I</samp> denotes a tab byte <samp>'\t'</samp>.
+Sorting this yields:<p>
+
+<pre><samp>^@Brown
+^@Quick
+^@The
+^@fox
+^Idog.
+^Ijumps
+^Ilazy
+^Iover
+^Ithe
+</samp></pre>
+
+<p>and encoding this yields the output shown above.</p>
+
+<h2>Submit</h2>
+
+<p>Submit the following files.</p>
+
+<ul>
+
+<li>The files <samp>lab5.txt</samp> and <samp>lab5.diff</samp> as
+described in the lab.</li>
+
+<li>A single source file <samp>srot13.c</samp> as described in the
+homework.</li>
+
+</ul>
+
+<p>All files should be ASCII text files, with no
+carriage returns, and with no more than 200 columns per line.
+The C source file should contain no more than 132 columns per line.
+The shell
+commands</p>
+
+<pre><samp>expand lab5.txt lab5.diff | awk '/\r/ || 200 &lt; length'
+expand srot13.c | awk '/\r/ || 132 &lt; length'
+</samp></pre>
+
+<p>should output nothing.</p>
+
+
+<hr>
+<address>
+ &copy; 2005, 2007&ndash;2011, 2013, 2014 <a href='../mail-eggert.html'>Paul
+ Eggert</a>.  See <a href='../copyright.html'>copying rules</a>.<br>
+
+ $Id: assign5.html,v 1.29 2014/02/10 19:01:18 eggert Exp $
+
+</address>
+
+</body>
+</html>
