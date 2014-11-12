@@ -1,3 +1,3 @@
-CS 35L - Software Construction Laboratory
-UCLA Fall 2014
-Assignments from class
+CS 35L - Software Construction Laboratory<br>
+UCLA Fall 2014<br>
+Assignments from class<br>
