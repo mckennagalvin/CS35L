@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# make everything lowercase
+tr '[:upper:]' '[:lower:]' | \
+
+# remove beginning excess text
+sed '/<!doctype/,/adopt/d' | \
+
+# remove ending excess text
+sed '/<\/table>/,/<\/html>/d' | \
+
+# remove blocks with no content (<td><br></td><td></td>)
+sed '/<td><br>/,/<td><\/td>/d' | \
+
+# remove even numbered lines (english words)
+sed '2~2d' | \
+
+# make new line where there's a comma
+sed 's/, /\n/g' | \
+
+# make new line where there's a space
+sed 's/ /\n/g' | \
+
+# remove HTML tags
+sed 's/<[^>]*>//g' | \
+
+# delete extra space
+tr -cs 'A-Za-z`' '[\n*]' | \
+
+# replace ` with '
+sed 's/`/\x27/g' | \
+
+# remove words with invalid characters
+grep "^[pk'mnwlhaeiou]*$" | \
+
+# sort the words!
+sort -u

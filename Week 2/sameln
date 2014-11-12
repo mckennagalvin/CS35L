@@ -1,0 +1,44 @@
+# McKenna Galvin
+# 604290168
+# sameln
+# CS 35L Homework 2
+
+#!/bin/bash
+
+dir=$1
+ALLFILES=`ls -a $dir | LC_ALL=C sort`
+declare -a ARRAY
+let count=0
+let linked=0
+
+# find all regular files and put them in an array
+for FILE in $ALLFILES
+do
+	let linked=0
+	if [ -f "$dir/$FILE" ]
+	then
+		echo "$dir/$FILE is a regular file."
+		for ((i=count-1; i!=-1; i--))
+		do
+			cmp "$dir/$FILE" "${ARRAY[$i]}" -s
+			if [ $? == 0 ]
+			then
+				rm "$dir/$FILE"
+				# link duplicate to first file
+				ln ${ARRAY[$i]} "$dir/$FILE"
+				let linked=1
+				break
+			fi
+		done
+		if [ $linked == 0 ] # didn't link
+		then
+			ARRAY[$count]="$dir/$FILE"
+			let count=count+1
+		fi
+	else
+		echo "$dir/$FILE is NOT a regular file."
+	fi
+done
+
+echo "There are $count regular files."
+

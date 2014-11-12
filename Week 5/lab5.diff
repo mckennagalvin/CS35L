@@ -1,0 +1,23 @@
+2014-11-05  McKenna Nicole Galvin <mckenna@lnxsrv02.seas.ucla.edu>
+    * timespec.h (timespec_cmp_: changed diff to be a long instead
+    pf an int, in order to hold a higher value and avoid overflow
+
+
+--- coreutils-with-bug/lib/timespec.h	2005-09-21 23:05:39.000000000 -0700
++++ coreutils-fixed/lib/timespec.h	2014-11-05 00:06:39.830947000 -0800
+@@ -45,8 +45,13 @@
+ static inline int
+ timespec_cmp (struct timespec a, struct timespec b)
+ {
+-  int diff = a.tv_sec - b.tv_sec;
+-  return diff ? diff : a.tv_nsec - b.tv_nsec;
++  long diff = (long) a.tv_sec - (long) b.tv_sec;
++  if (diff == 0)
++    return 0;
++  else if (diff > 0)
++    return 1;
++  else
++    return -1;
+ }
+ 
+ # if ! HAVE_DECL_NANOSLEEP

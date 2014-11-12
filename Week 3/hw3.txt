@@ -1,0 +1,25 @@
+McKenna Galvin
+604290168
+hw3.txt
+CS 35L week 3
+
+Q1. Brady's patch removed that line because it was repeated. It would not have
+    mattered because that is a goto statement, and the program would have just
+    gone through it without anything going wrong.
+
+Q2. If my company were to adopt this patched version, this patch would only
+    work in locales where a specific style has not been specified (such as
+    English, for example). This could be problematic once you start using
+    locales with different languages because it wouldn't work.
+
+Q3. When the script is invoked on an empty file, it returns the following error
+    statement:
+	IndexError: list index out of range
+    This is because there aren't any lines in the empty file to select a random
+    line from, and the self.lines list in the randline class is empty.
+
+Q4. When the script is invoked with Python 3 rather than Python 2, there is a
+    syntax error related to the following line:
+    	except IOError as (errno, strerror):
+    In Python 3, the line should instead be:
+       	except IOError as err:

@@ -1,0 +1,88 @@
+lab1.log
+McKenna Galvin
+604290168
+CS 35L
+
+1. man man
+   man -k word
+
+2. whereis cp
+   whereis wc
+
+3. echo $PATH
+   cd /usr/bin
+   man find
+   find -executable -name "?"
+   whatis w
+   whatis X
+   man X
+   whatis [
+
+4. man find
+   man readlink
+   cd /usr/bin
+   find cc
+   readlink cc
+
+5. man setgid
+   man chmod
+
+6. man find
+   scrolled until found section about tests
+   find -mtime -3
+
+7. find / -mtime -3
+
+8. man find
+   whereis find
+   cd /bin
+   find -type l
+   find -type l | wc -l
+
+9. cd /usr/lib
+   man ls
+   ls -l -a -t
+
+10. man locale
+
+11. emacs test
+    M-x command-apropos <enter> sort <enter>
+
+12. emacs test
+    C-h k C-a
+    C-h k C-b
+    C-h	k C-c
+    C-h	k C-d
+    C-h	k C-e
+    C-h	k C-f
+    C-h	k C-g
+    C-h	k C-h
+    C-h	k C-i
+    C-h	k C-j
+    C-h	k C-k
+    C-h	k C-l
+    C-h	k C-m
+    C-h	k C-n
+    C-h	k C-o
+    C-h	k C-p
+    C-h	k C-q
+    C-h	k C-r
+    C-h	k C-s
+    C-h	k C-t
+    C-h	k C-u
+    C-h	k C-v
+    C-h	k C-w
+    C-h	k C-x
+    C-h	k C-y
+    C-h	k C-z
+
+13. emacs test
+    C-h k C-g
+
+14. emacs test
+    C-h k C-y
+
+15. emacs test 
+    C-x d
+    <enter>
+    f

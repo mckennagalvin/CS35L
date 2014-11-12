@@ -1,0 +1,76 @@
+McKenna Galvin
+604290168
+lab4.txt
+CS 35L week 4
+
+1. get a copy of the diffutils repository:
+       mkdir gitroot
+       cd gitroot
+       git clone git://git.savannah.gnu.org/diffutils.git
+
+2. get a log of changes to Diffutil's master branch:
+       cd diffutils
+       git log > git-log.txt
+
+3. generate a list of tags used for Diffutils:
+       git tag > git-tags.txt
+
+4. find the specified commit and generate a patch for it:
+       went into emacs for git-log.txt
+       searched for commit with the phrase
+       found the commit ID, then typed into the command line:
+       git show 62ca21c8c1a5aa3488589dcb191a4ef04ae9ed4f > quote-patch.txt
+
+5. check out version 3.0:
+       cat git-tags.txt (discovered the tag in question was v3.0)
+       git checkout v3.0
+
+6. apply the patch:
+       patch -p1 < quote-patch.txt
+   the problems it found were finding the HACKING file, diffutils.texi
+   and help2man
+
+7. I used git status to see a list of modified and untracked files.
+
+8. I read up about the vc-diff and vc-revert functions to see how I could
+   revert the changes in the files that weren't C files.
+
+9. For each of the files that were listed as modified in git status, I used
+        C-x v = then C-x v u
+   to revert all of the changes for all of the files that weren't C files.
+   Next, I went into all of the C files and looked at which changes were made
+   from the previous versions. For all of the changes that happened in the
+   comments, I reverted them, leaving the C code unreverted. After all of the
+   changes were made, there were 6 files remaining that still had
+   modifications.
+
+10.  I examined the diff.c.rej and diff3.c.rej files, and applied the patches
+     to the diff.c and diff3.c files manually.
+
+11.  I removed the untracked files by using the git status command and rm
+     to all files that were untracked. After all of that was done, I was left
+     with 6 modified files.
+
+12.  new patch:
+     	 git diff > quote-3.0-patch.txt
+
+13.  build the modified version of diffutils:
+     	   ./bootstrap
+	   ./configure
+	   make
+	   make check
+     diff . - and diff --help output the right thing!
+
+14.  For the sanity test, I put the former source code into the directory
+     diffutils-3.0 and the new source code into diffutils-3.0-patch by copying
+     the source directory into a new directory, then applying the patch to the
+     source. I then ran the instruction
+     	     src/diff -pru diffutils-3.0 diffutils-3.0-patch
+	     >quote-3.0-test.txt
+
+15. compare the contents of the two files:
+    	    diff quote-3.0-test.txt quote-3.0-patch.txt
+    The two files aren't identical, but the differences are innocuous, such
+    as a few backtick / single quote differences in things like certain
+    comments.
+

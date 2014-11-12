@@ -1,0 +1,37 @@
+McKenna Galvin
+604290168
+hw4.txt
+CS 35L week 4
+
+2. check out v3.0 into a new branch called quote:
+   	 git checkout v3.0 -b "quote"
+
+3. run the patch command:
+       patch -p1 < quote-3.0-patch.txt
+
+5. compose a ChangeLog entry for the patch:
+       I went into each of the 6 modified files (cmp.c, diff.c, diff3.c, dir.c,
+       sdiff.c, and util.c) and used C-x 4 a to update the Changelog for them.
+
+6. commit changes to the new branch
+       git add .
+       git commit --file=src/Changelog
+   check that the commit worked:
+       git log
+
+7. generate a file formatted-patch.txt
+       git format-patch -1 --stdout  > formatted-patch.txt
+
+8. verify partner's patch:
+       git checkout v3.0 -b partner
+       git am formatted-patch.txt
+   build the resulting system:
+       ./bootstrap
+       ./configure
+       make
+       make check
+
+9. verify the ChangeLog entry works:
+       make distdir
+       cat diffutils-3.0.1-1c16/ChangeLog
+   The ChangeLog contained my commit at the top!

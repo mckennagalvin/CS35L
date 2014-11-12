@@ -1,0 +1,101 @@
+lab1.txt
+McKenna Galvin
+604290168
+CS 35L
+
+1. man -k <word>
+   (man man)
+
+2. cp: /bin/cp
+   wc: /usr/bin/wc
+   (use whereis)
+
+3. w: shows who is logged on and what they are doing
+   X: a portable, network-transparent window system
+   [: check file types and compare values
+   (use find -executable -name "?")
+
+4. gcc
+   (use readlink)
+
+5. g-s takes away the permission to run the file based on the group
+   permissions of the file
+   (use man chmod)
+
+6. find -mtime -3
+   (use man find)
+
+7. /usr/public/Aliases/has_courseweb_email_access
+/usr/public/Aliases/asme.officers
+/usr/public/Aliases/ceedstudents
+/usr/public/Aliases/fac
+/usr/public/Aliases/grad
+/usr/public/Aliases/staff
+/usr/public/Aliases/swe-members
+/usr/public/Aliases/tbp_members
+/usr/public/Aliases/ugrad
+/usr/public/www/maestdntsvcs/exam/.htpasswd
+/usr/public/www/maestdntsvcs/prvt_grad_postdoc/.htpasswd
+/usr/public/www/maestdntsvcs/prvt_grad_postdoc/acpo.htm
+etc.
+   (use find / -mtime -3)
+
+8. 18 of the files in /bin/ are symbolic links
+   (use find /usr/bin -type l | wc -l)
+
+9. libsqlite3.so.0.8.6
+   (cd /usr/lib, then ls -l -a -t)
+
+10.locale gets its data from the locale category defined by the
+   LC_* environment variables
+   (use man locale)
+
+11.Buffer-menu-sort
+   sort-columns
+   sort-fields
+   sort-lines
+   sort-numeric-fields
+   sort-pages
+   sort-paragraphs
+   sort-regexp-fields
+   tabulated-list-col-sort
+   (use M-x command-apropos <enter> sort <enter>)
+
+12. C-a: move to beginning of line
+    C-b: backward char
+    C-c: prefix command
+    C-d: delete
+    C-e: move to end of line
+    C-f: forward char
+    C-g: keyboard-quit
+    C-h: help
+    C-i: indent for tab
+    C-j: newline and indent
+    C-k: kill line
+    C-l: move current buffer line to specified window line
+    C-m: newline
+    C-n: next line
+    C-o: open line
+    C-p: previous line
+    C-q: read next input character and insert it
+    C-r: incremental search backward
+    C-s: incremental search forward
+    C-t: interchange characters around points
+    C-u: universal argument
+    C-v: scroll text of selected window upward ARG lines
+    C-w: kill text between point and mark
+    C-x: prefix command
+    C-y: yank
+    C-z: suspend frame
+    (use C-h k C-<character>)
+
+13. C-g quits the current process
+    (use C-h k C-y)
+
+14. yank reinserts the last stretch of killed text
+    (use C-h k C-y)
+
+15. dired lets you open the files, while ls -l just allows
+    you to view them
+    (use C-x d)
+

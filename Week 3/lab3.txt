@@ -1,0 +1,48 @@
+McKenna Galvin
+604290168
+lab3.txt
+CS 35L week 3
+
+1. grab Coreutils 7.6:
+   	wget ftp.gnu.org/gnu/coreutils/coreutils-7.6.tar.gx
+
+2. untar coreutils:
+   	 tar -xzvf coreutils-7.6.tar.gz
+   create directory in which to install coreutils:
+   	  cd coreutils-7.6
+   	  mkdir coreutilsInstall
+   	  cd coreutils-7.6
+   read the man page for instructions on which prefix to use to configure:
+   	  cat INSTALL
+   	  ./configure --prefix=/u/cs/ugrad/mckenna/Documents/CS35L/week3
+   	  coreutilsInstall
+   make and install:
+   	  make
+	  make install
+
+3. reproduce the bug:
+   	  cd /u/cs/ugrad/mckenna/Documents/CS35L/week3/coreutilsInstall/bin
+	  ./ls -l
+   it output date in the wrong format, as expected
+
+4. apply Brady's patch:
+   	  cd ~/Documents/CS35L/week3/coreutils-7.6
+   	  emacs patch_file
+   copied and pasted patch
+   used man patch to find out that you need the option -p1 to get rid
+   of the "a/" and "b/" from the source so the paths are correct
+      	  patch =p1 < patch_file
+
+5. build but don't install the fixed version:
+   	  make
+   All you need is the make instruction, because it takes the directions from
+   the Makefile and only updates modified files. Only the ls.c file was
+   modified, so we only needed to execute the make command to reflect those
+   changes.
+
+6. check the modified ls:
+   	  cd src
+   	  ./ls -l
+   the modified ls fixed it!
+   testing on a file that's old: touch -t 201101010111 oldfile
+   testing on a recent file: touch -t 201410201111 newerfile

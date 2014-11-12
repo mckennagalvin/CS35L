@@ -1,0 +1,132 @@
+McKenna Galvin
+604290168
+lab2.log
+CS 35L Week 2
+
+************************************************************************
+   TR COMMANDS
+************************************************************************
+
+tr -c 'A-Za-z' '[\n*]'
+replaces everything in the file that isn't a letter with a new line
+character
+
+tr -cs 'A-Za-z' '[\n*]'
+replaces everything in the file that isn't a letter with a new line
+character, without repeating new line characters
+
+tr -cs 'A-Za-z' '[\n*]' | sort
+does everything listed above, then sorts the list according to ASCII
+values so it's alphabetized
+
+tr -cs 'A-Za-z' '[\n*]' | sort -u
+does everything listed above, except lists without repeats
+
+tr -cs 'A-Za-z'	'[\n*]' | sort -u | comm - words
+does everything listed above, then compares the list of words in the HTML
+document with the "words" file, delivering an output that lists
+- words unique to the input
+- words unique to the "words" file
+- words that are common to both files
+
+tr -cs 'A-Za-z' '[\n*]' | sort -u | comm -23 -words
+does everything listed above, except only lists the first column (words
+unique to the input file, a.k.a words not in the dictionary)
+
+
+************************************************************************
+   BUILDWORDS SCRIPT
+************************************************************************
+
+I first did each step and put the output into two temporary files
+so I could check what each command did every step of the way:
+
+# make everything lowercase
+tr '[:upper:]' '[:lower:]' < hwords > temp
+
+# remove beginning excess text
+sed '/<!doctype/,/adopt/d' < temp > temp2
+
+# remove ending excess text
+sed '/<\/table>/,/<\/html>/d' < temp2 > temp
+
+# remove blocks with no content (<td><br></td><td></td>)
+sed '/<td><br>/,/<td><\/td>/d' < temp > temp2
+
+# remove even numbered lines (english words)
+sed '2~2d' < temp2 > temp
+
+# make new line where there's a comma
+sed 's/, /\n/g' < temp > temp2
+
+# make new line where there's a space
+sed 's/ /\n/g' < temp2 > temp
+
+# remove HTML tags
+sed 's/<[^>]*>//g' < temp > temp2
+
+# delete extra space
+tr -cs 'A-Za-z`' '[\n*]' < temp2 > temp
+
+# replace ` with '
+sed 's/`/\x27/g' < temp > temp2
+
+# remove words with invalid characters
+grep "^[pk'mnwlhaeiou]*$" < temp2 > temp
+
+# sort the words!
+sort -u < temp > temp2
+
+
+
+Script version of above instructions:
+
+#!/bin/bash
+tr '[:upper:]' '[:lower:]' | \
+sed '/<!doctype/,/adopt/d' | \
+sed '/<\/table>/,/<\/html>/d' | \
+sed '/<td><br>/,/<td><\/td>/d' | \
+sed '2~2d' | \
+sed 's/, /\n/g' | \
+sed 's/ /\n/g' | \
+sed 's/<[^>]*>//g' | \
+tr -cs 'A-Za-z`' '[\n*]' | \
+sed 's/`/\x27/g' | \
+grep "^[pk'mnwlhaeiou]*$" | \
+sort -u
+
+
+
+----------------------------------------------------------------
+   TESTING BUILDWORDS:
+
+make buildwords executable:
+chmod a+x buildwords
+
+create file of sorted Hawaiian words
+cat hwords | ./buildwords > sortedhwords
+For the purposes of testing, "sortedhwords" will be the file that contains
+the Hawaiian dictionary.
+
+-----
+
+There are 405 words in the webpage for the assignment that are misspelled
+according to the Hawaiian dictionary:
+tr -cs "A-Za-z'" "[\n*]" < assign2.html | tr '[:upper:]' '[:lower:]' | sort -u
+ | comm -23 - sortedhwords | wc -l
+
+There are 39 words in the webpage for the assignment that are misspelled
+according to the English dictionary:
+tr -cs "A-Za-z'" "[\n*]" < assign2.html | tr '[:upper:]' '[:lower:]' | sort -u
+ | comm -23 - words | wc -l
+
+Running the Hawaiian spell checker against itself results in no misspelled
+words. This makes sense because it's the same file!
+tr -cs "A-Za-z'" "[\n*]" < sortedhwords | tr '[:upper:]' '[:lower:]' | sort -u
+| comm -23 - sortedhwords | wc -l
+
+Words misspelled as English, but not Hawaiian:
+halau and lau, for example
+
+Words misspelled as Hawaiian, but not English:
+able, about, above, assign, characters, has, and letters, for example

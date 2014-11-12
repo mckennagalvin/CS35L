@@ -1,0 +1,72 @@
+McKenna Galvin
+604290168
+hw1.txt
+CS 35L
+
+Exercise 1.1
+
+1.
+2. C-s A S C Enter
+3. C-s I n s t r u c t i o n s Enter
+4. C-s H T M L Enter
+5. C-s h u n t Enter
+6. C-e
+7. C-a
+8. Shift-M-<
+9.
+10.
+11. C-x C-c
+
+Exercise 1.2
+
+1.
+2. M-x g o t o - l i n e Enter 1 6 Enter C-k
+3. C-s D E L E Enter C-a C-k
+4. C-s h t t p : / / e n . C-s Enter M-a M-k
+5. C-s < ! Enter C-c C-d
+
+Exercise 1.3
+
+1.
+2. Shift-M-5 A s s i g n m e n t SP 1 Enter
+   A s s i g n m e n t SP 35 Enter SP .
+3. Shift-M-5 U T F - 8 Enter
+   U S - A S C I I Enter .
+4. Shift-M-< C-s < o l > Enter Enter
+5. C-x C-s C-x C-c
+
+Exercise 1.4
+
+1.
+2.
+3. Shift-M-> C-SP up up up up M-w M-x g o t o - l i n e
+   Enter 1 6 Enter C-y
+4. Shift-M-> C-SP up M-w C-s H o m e w o r k Enter C-n
+   Enter C-y
+   Shift-M-> C-SP up up up M-w C-s S u b m i t Enter C-n
+   Enter C-y
+   Shift-M-> C-SP up M-w C-s s h o u l d SP o u t Enter M-f
+   M-f C-y
+5. Shift-M-> Shift-M-] up up up up up up C-w
+6. C-x u
+7. M-;
+8. Shift-M-< Shift-M-5 < o l > Enter < O l > Enter !
+   (6 instances)
+9.
+
+Exercise 1.5
+
+1. M-x m a k e - d i r e c t o r y Enter j u n k Enter
+2. C-x C-f h e l l o . c
+   (then copied in the program)
+3. C-x C-f m a k e f i l e
+   T a r g e t : SP d e p e n d e n c i e s TAB
+   s y s t e m SP c o m m a n d
+   C-x C-d h e l l o . c Enter
+   M-x c o m p i l e Enter m a k e f i l e Enter
+4. M-x c o m p i l e Enter g c c Space h e l l o . c Enter
+   M-x c o m p i l e Enter . / a . o u t - o SP h e l l o - o u t Enter
+5. C-x d h e l l o - o u t Enter C-SP down M-w
+
+Output:
+Hello, world!

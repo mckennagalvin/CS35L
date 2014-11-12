@@ -1,0 +1,110 @@
+McKenna Galvin
+604290168
+lab5.txt
+CS35L week 5
+
+I first downloaded the bugged version of coreutils:
+  wget http://cs.ucla.edu/classes/fall14/cs35L/assign/coreutils-with-bug.tar.gz
+  tar -xvf coreutils-with-bug.tar.gz
+
+build the old version:
+  ./configure CFLAGS="-g O0"
+  make
+
+Building it as-is came with some problems because there were some naming
+errors. When I called the "make" command, I got error messages like
+"previous declaration of 'futimens' was here". Applying the patch changed
+things like futimens to coreutils_futimens and the files ending in a tilde (~)
+to versions of the file without the tilde, thus allowing it to work.
+
+get and apply the patch:
+  wget http://cs.ucla.edu/classes/fall14/cs35L/assign/coreutils.diff
+  patch -p0 < coreutils.diff
+
+Now, when I configure and make, it works!
+
+--------------------------------
+
+Next, I reproduced the problem by touching 3 new files:
+  tmp=$(mktemp -d)
+  cd $tmp
+  touch -d '1918-11-11 11:00 GMT' wwi-armistice
+  touch now
+  sleep 1
+  touch now1
+  TZ=UTC0 ~/Documents/CS35L/week5/coreutils-with-bug/src/ls -lt --full-time
+  wwi-armistice now now1
+
+Sure enough, it delivered a result that gives the impression that the WWI
+armistice was in the future!
+  -rw-r--r-- 1 mckenna csugrad 0 1918-11-11 11:00:00.000000000 +0000
+  	     wwi-armistice
+  -rw-r--r-- 1 mckenna csugrad 0 2014-11-04 07:37:58.284939517 +0000 now1
+  -rw-r--r-- 1 mckenna csugrad 0 2014-11-04 07:37:53.461771775 +0000 now
+
+-----------------------------------
+
+To debug, I first inspected the ls.c file to look for the part of the program
+that might be causing the issues. I noticed that there was a function called
+sort_files. If the files are being sorted according to time, I noticed that
+the default function to call is compare_mtime. This seemed like a good place
+to start debugging!
+  gdb --args ./ls -lt wwi-armistice now now1
+  (gdb) b compare_mtime
+  (gdb) start
+  (gdb) c
+
+Now that I was at the source of the problem, I looked more closely at the
+function to see where the issue might be:
+  (gdb) list compare_mtime
+
+compare_mtime calls cmp_mtime, which calls timespec_cmp.
+Timespec_cmp returns negative if A < B, zero if A == B, or positive if A < B,
+and stores the result in an int. After stepping through this function being
+called and tracing the value of diff using the "print" command, I noticed
+that the error involved overflow.
+
+m_time for the wwi_armistice file is a negative number, since it happened
+so long ago, but when comparing it with a positive number like the m_time
+value for the "now" file, diff became a negative number. This is a bug;
+subtracting a negative number from a positive one should return a positive
+number, not negative!
+
+This is because overflow occurred, since the time for wwi_armistice was so
+long ago. To fix this problem, I simply changed the data type for "diff" from
+an int to a long, so that the variable would be able to store a greater range
+without overflow. I copied the coreutils-with-bug directory into a new one,
+then changed the timespec.h file so the timespec_cmp would now use a long for
+storage instead of an int. I then configured/made the new version of coreutils,
+did the same ls test as before, and sure enough, it worked this time!
+
+-rw-r--r-- 1 mckenna csugrad 0 2014-11-05 08:14:48.406146160 +0000 now1
+-rw-r--r-- 1 mckenna csugrad 0 2014-11-05 08:14:45.289037532 +0000 now
+-rw-r--r-- 1 mckenna csugrad 0 1918-11-11 11:00:00.000000000 +0000
+	    wwi-armistice
+
+-----------------------------------------
+
+Next, I made a patch that would fix the file:
+  diff -u coreutils-with-bug/lib/timespec.h coreutils-fixed/lib/timespec.h
+  > lab5.diff
+I added ChangeLog entry in emacs, and then I was done! 
+
+-----------------------------------------
+
+I also reproduced the problem inside the home directory instead of the $tmp
+directory. When I ran ls -lt --full-time wwi-armistice now now1, it
+produced a peculiar result:
+  -rw-r--r-- 1 mckenna csugrad 0 2054-12-17 09:28:16.000000000 -0800
+  	     wwi-armistice
+  -rw-r--r-- 1 mckenna csugrad 0 2014-11-03 23:42:57.182451000 -0800 now1
+  -rw-r--r-- 1 mckenna csugrad 0 2014-11-03 23:42:51.771774000 -0800 now
+
+This is saying that the file was created in 2054 instead of 1918!
+This is because timestamps are represented by the number of seconds since
+midnight on January 1, 1970 (also known as the "Unix Epoch"). The SEASnet
+NFS filesystem uses 32-bit UNSIGNED time stamps, whereas the local file system
+on the Linux Server uses 32-but SIGNED time stamped. That means that even
+though the time stamp for 1918 should be negative since it happened before
+1970, the NFS filesystem can only represent a positive number, thus delivering
+an inaccurate result.
