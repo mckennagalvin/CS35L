@@ -1,5 +1,4 @@
 // McKenna Galvin
-// 604290168
 // srot13.c
 // CS 35L week 5
 

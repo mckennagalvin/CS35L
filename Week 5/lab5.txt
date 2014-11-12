@@ -1,5 +1,4 @@
 McKenna Galvin
-604290168
 lab5.txt
 CS35L week 5
 
