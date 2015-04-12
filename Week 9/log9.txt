@@ -1,0 +1,59 @@
+McKenna Galvin
+604290168
+log9.txt
+CS 35L week 9
+
+*************************************************************************
+SETUP:
+
+ran sort --version to make sure I was using an updated version of sort
+confirmed my PATH variable was set
+
+*************************************************************************
+
+Generate a file containing 10,000,000 random double-precision floating point
+numbers, one per line with no white space:
+
+od -An -f -N 40000000 < /dev/urandom | tr -s ' ' '\n' > random.txt
+
+od:  outputs to stdout
+-An: no offset
+-f:  select floats
+-N:  limit dump to 40,000,000 bytes
+40,000,000 because want 10,000,000 floats that will take up 4 bytes each
+/dev/random: pseudorandom number generator
+tr:  replaces spaces with new lines
+
+*************************************************************************
+
+TIMING THE SORT COMMAND
+
+time -p sort -g random.txt > /dev/null
+real 21.00
+user 89.11
+sys 0.31
+
+INVOKING SORT WITH --PARALLEL OPTION
+time -p sort -g --parallel=<# of threads> random.txt > /dev/null
+
+1 thread:
+real 73.12
+user 73.02
+sys 0.13
+
+2 threads:
+real 40.11
+user 75.35
+sys 0.29
+
+4 threads:
+real 24.60
+user 78.82
+sys 0.20
+
+8 threads:
+real 17.96
+user 84.05
+sys 0.27
+
+It is clear that parallelization definitely improves performance!

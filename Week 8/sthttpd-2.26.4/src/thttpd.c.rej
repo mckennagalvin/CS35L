@@ -1,0 +1,11 @@
+--- src/thttpd.c	      2012-07-13 04:32:59.000000000 -0700
++++ src/thttpd.c 2012-11-18 22:11:39.275115033 -0800
+@@ -1600,7 +1600,7 @@
+     /* Read some more bytes. */
+     sz = read(
+     hc->conn_fd, &(hc->read_buf[hc->read_idx]),
+-    hc->read_size - hc->read_idx );
++    hc->read_size );
+     if ( sz == 0 )
+      	{
+ 	httpd_send_err( hc, 400, httpd_err400title, "", httpd_err400form, "" );

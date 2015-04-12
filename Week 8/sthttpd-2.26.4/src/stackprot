@@ -1,0 +1,6 @@
+> 	call	__stack_chk_fail
+> 	call	__stack_chk_fail
+> 	call	__stack_chk_fail
+< 	call	syslog
+> 	call	syslog
+> 	call	__stack_chk_fail

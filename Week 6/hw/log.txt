@@ -1,0 +1,56 @@
+McKenna Galvin
+604290168
+lab.log
+CS 35L week 6
+
+For this lab, we split up into pairs and SSHed to each other, taking turns
+at being the server administrator and the client.
+
+***************************************************************************
+  SETUP
+***************************************************************************
+We first used ifconfig to get each other's IP addresses. This would be
+necessary later on when trying to connect to the other's server.
+
+***************************************************************************
+  AS THE SERVER
+***************************************************************************
+generate the public and private keys
+    ssh-keygen
+
+create an account for the partner (client):
+    sudo useradd -d /home/michael -m michael
+    sudo passwd michael
+    (made the password ucla123)
+
+create .ssh directory for the partner
+    cd /home/michael
+    sudo mkdir .ssh
+
+changed ownership and permission on .ssh directory
+    sudo chown -R michael .ssh
+    sudo chmod 700 .ssh
+
+my partner then ssh'ed onto my server
+
+***************************************************************************
+  AS THE CLIENT
+***************************************************************************
+after my partner created a username and password for me on his computer:
+
+generate public and private keys
+    ssh-keygen
+
+copy public key to the server for key-based authentication
+    ssh-copy-id -i mckenna@<partner's IP address>
+
+add private key to authentication agent
+    ssh-add
+    (typed in password)
+
+now SSH to server
+    ssh mckenna@<partner's IP address>
+
+tried out X-session forwarding
+    ssh -X mckenna<partner's IP address>
+    (tried running firefox and the GUI was shown in my window!)

@@ -1,0 +1,51 @@
+McKenna Galvin
+604290168
+hw.txt
+CS 35L week8
+
+For the first part of the homework, I got access to an Amazon EC2 instance
+and reproduced the web server crash that I did during the lab. These are the
+steps I took to do so:
+
+SETTING UP THE SERVER:
+- created an account with AWS
+- launched an instance of Amazon EC2 (selected Red Hat AMI, created key pair
+  named 35L.pem)
+  	instance ID is i-6eee4b62
+	public DNS is ec2-54-148-111-29.us-west-2.compute.amazonaws.com
+
+SSH INTO SERVER:
+- launched terminal window on my Mac
+- cd Desktop
+- chmod 400 35L.pem
+- ssh -i 35L.pem ec2-user@ec2-54-148-111-29.us-west-2.compute.amazonaws.com
+
+TRANSFERRING THE STHTTPD FILES:
+- launched new terminal window on my Mac, changed directory to Desktop where
+  I had the key and the sthttpd-2.26.4 folder
+- for simplicity's sake I manually applied the patch to thttpd.c when the file
+  was just on my Mac before I transferred it over to the server using scp
+  (since emacs wouldn't be installed on the server)
+- scp -i 35L.pem -r sthttpd-2.26.4
+  ec2-user@ec2-54-148-111-29.us-west-2.compute.amazonaws.com:~
+
+COMPILING THE SOIURCE CODE:
+- changed back to terminal that was ssh'ing to the server
+- sudo yum install gcc
+- cd sthtttpd-2.26.4
+- ./configure CFLAGS="-g"
+- make
+
+I then followed the same steps that I did in the lab to crash the server.
+
+-------------------------------------------------------------------------------
+
+The second part of the homework involves ranking the seriousness of each
+vulnerability. From most urgent vulnerability to least:
+
+1.
+
+5. VU #213119: KDC fails to properly validate PAC signature
+   I ranked this one lower because the person exploiting the vulnerability must
+   first be a user on the domain, and the computers that they can exploit are
+   limited to those on the domain.

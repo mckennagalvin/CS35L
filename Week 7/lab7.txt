@@ -1,0 +1,148 @@
+McKenna Galvin
+604290168
+lab7.txt
+CS 35L week 7
+
+1. catb.c uses getchar and putchar from the standard library to read from
+   stdin and output to stdout. To compile, I ran the command
+   	 gcc -o catb catb.c
+   and tested it by writing a file a.txt with random words, and using the
+   command
+	cat a.txt | ./catb
+   It worked! Yay!
+
+2. catu.c does the same thing as catb.c, using the system calls read() and
+   write() from unistd.h. In order to read and write single bytes at a time,
+   I made the nbyte argument 1 and created a buffer of size 1. I tested and
+   compiled in a similar fashion as I did for catb.c.
+
+3. In order to find a file large enough to use as a test case (5,000,000+
+   bytes), I ran a search on the SEASnet server.
+   	   find . -size +5000000c
+   I found that the words file from week two's project was just nearly
+   5,000,000 bytes, so to make it larger I just copied the file and appended
+   it onto the original file. Then I was left with a file named words that
+   had a dictionary repeated twice! The file was 9907398 bytes.
+
+   Next, I used strace to compare the system calls issued by the catb and
+   catu commands:
+
+   a. copying one file to another:
+      I decided to use the -c option so it could tell me how many system
+      calls it was making. I used the commands
+      	    strace -c ./catb < words > output.txt
+      	    strace -c ./catu < words > output2.txt
+
+catb made 332 total system calls:
+      
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+  -nan    0.000000           0       154           read
+  -nan    0.000000           0       152           write
+  -nan    0.000000           0         2           open
+  -nan    0.000000           0         2           close
+  -nan    0.000000           0         4           fstat
+  -nan    0.000000           0        10           mmap
+  -nan    0.000000           0         3           mprotect
+  -nan    0.000000           0         1           munmap
+  -nan    0.000000           0         1           brk
+  -nan    0.000000           0         1         1 access
+  -nan    0.000000           0         1           execve
+  -nan    0.000000           0         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.000000                   332         1 total
+
+catu made 19814820 total system calls:
+
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+56.57    0.862533           0   9907398           write
+43.42    0.662123           0   9907400           read
+ 0.01    0.000154         154         1         1 access
+ 0.00    0.000000           0         2           open
+ 0.00    0.000000           0         2           close
+ 0.00    0.000000           0         2           fstat
+ 0.00    0.000000           0         8           mmap
+ 0.00    0.000000           0         3           mprotect
+ 0.00    0.000000           0         1           munmap
+ 0.00    0.000000           0         1           brk
+ 0.00    0.000000           0         1           execve
+ 0.00    0.000000           0         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    1.524810              19814820         1 total
+
+
+
+b. copying a file to the terminal:
+      Similarly, I used the commands
+            strace -c ./catb < words
+	    strace -c ./catu < words
+
+
+catb made 959838 total system calls:
+
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 99.69    0.039234           0    959658           write
+  0.24    0.000093           1       154           read
+  0.07    0.000028           9         3           mprotect
+  0.00    0.000000           0         2           open
+  0.00    0.000000           0         2           close
+  0.00    0.000000           0         4           fstat
+  0.00    0.000000           0        10           mmap
+  0.00    0.000000           0         1           munmap
+  0.00    0.000000           0         1           brk
+  0.00    0.000000           0         1         1 access
+  0.00    0.000000           0         1           execve
+  0.00    0.000000           0         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.039355                959838         1 total
+
+catu made 19814820 total system calls:
+
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 57.35    0.327263           0   9907398           write
+ 42.64    0.243339           0   9907400           read
+  0.00    0.000016           2         8           mmap
+  0.00    0.000000           0         2           open
+  0.00    0.000000           0         2           close
+  0.00    0.000000           0         2           fstat
+  0.00    0.000000           0         3           mprotect
+  0.00    0.000000           0         1           munmap
+  0.00    0.000000           0         1           brk
+  0.00    0.000000           0         1         1 access
+  0.00    0.000000           0         1           execve
+  0.00    0.000000           0         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.570618              19814820         1 total
+
+
+4. I used the time command to measure how much faster catb was than catu:
+
+time ./catb < words
+real 0m4.192s
+user 0m0.348s
+sys  0m1.281s
+
+time ./catu < words gave the following result:
+real 0m10.946s
+user 0m0.458s
+sys  0m10.476s
+
+time ./catb < words > output.txt gave the following result:
+real 0m0.362s
+user 0m0.177s
+sys  0m0.008s
+
+time ./catu < words > output.txt gave the following result:
+real 0m9.202s
+user 0m0.462s
+sys  0m8.597s
+
+
+
+Conclusions: As expected, catb ran faster than catu. When copying a file to
+another file vs the terminal, it made sense that the number of read and write
+calls for catu were the same, since it had a buffer of size 1 both times.
+catb made efficient use of system calls, so it resulted in faster performance.

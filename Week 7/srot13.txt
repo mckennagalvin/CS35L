@@ -1,0 +1,68 @@
+McKenna Galvin
+604290168
+srot13.txt
+CS35L week 7
+
+To test my srot13 versus my srot13u, I created a python script that would
+generate a file of a certain number of words. The script looked like this:
+
+import random
+import string
+i = 0
+f = open("500words.txt", 'w+')
+while (i < 500):
+    f.write(''.join(random.choice(string.ascii_uppercase) for i in range(3)))
+    f.write("\n")
+    i += 1
+f.close()
+(I changed "500" to make files of different numbers of words)
+
+************************************************************************
+RESULTS OF PERFORMANCE TESTING:
+************************************************************************
+100,000 words:
+
+time cat 100000words.txt | ./srot13
+real 0m0.399s
+user 0m0.157s
+sys  0m0.239s
+
+time cat 100000words.txt | ./srot13u
+real 0m0.800s
+user 0m0.179s
+sys  0m0.621s
+
+10,000,000 words:
+
+time cat 10000000words.txt | ./srot13
+real 0m35.352s
+user 0m16.540s
+sys  0m15.195s
+
+time cat 10000000words.txt | ./srot13u
+real 1m5.268s
+user 0m16.464s
+sys  0m45.943s
+
+Like I expected, srot13u takes more time to execute than srot13 does. The
+"user" time is very similar, but the difference is in the time spent making
+system calls.
+
+
+************************************************************************
+RESULTS OF COMPARISON TESTING:
+************************************************************************
+I created several files with different numbers of words using the script
+above and tested the comparisons made. These are the results:
+
+# of words              comparisons
+-------------------------------------
+10                               20
+100                             550
+1000                           8732
+10000                        120418
+100000                      1536477
+
+The number of comparisons made is a little less than N*log2(N), where
+N is the number of words in the input. This makes sense, because the
+time complexity of qsort is O(Nlog2(N)).

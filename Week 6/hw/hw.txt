@@ -1,0 +1,23 @@
+McKenna Galvin
+604290168
+hw.txt
+CS 35L week 6
+
+1. If the other teams had been observing all the bytes going across the
+   network, it would still be secure because the data would be already be
+   encrypted and thus interpreted as gibberish. Without the private key, the
+   hacker wouldn't be able to interpret the bytes.
+
+   If the other teams had tapped our keyboard, the network would not be secure
+   because they could be able to find out passwords and passcodes if we had
+   to type them in.
+
+   If I were booting off USB and the other team had physical possession of it,
+   they would be able to access the private key and thus be able to decrypt
+   messages, making the network not secure.
+
+2. The gpg --verify command doesn't really verify that I personally created
+   the tar file because it only compares the signature with the public key. If
+   someone wanted to, they could sign a document as if they were me, and as
+   long as their public key is being used to verify it, the verify command
+   will act as if nothing was wrong, even though it is not actually my file.

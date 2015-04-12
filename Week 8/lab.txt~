@@ -1,0 +1,145 @@
+McKenna Galvin
+604290168
+lab.txt
+CS 35L week 8
+
+1. To build shttpd with the patch applied, I first got the file from the class
+   website and untared it:
+     wget http://cs.ucla.edu/classes/fall14/cs35L/assign/sthttpd-2.26.4.tar.gz
+     tar xvf sthttpd-2.26.4.tar.gz
+     cd sthttpd-2.26.4
+   Then I opened up emacs and put the patch into a file called "patch.diff" to
+   apply it:
+     patch -p1 < patch.diff
+     ./configure
+     C=gcc CFLAGS="-fno-stack-protector" CFLAGS="-g" make
+   Run it on my host:
+     cd src
+     ./thttpd -p 12298
+   Make sure nobody else is using my port:
+     ps aux | grep thttpd
+
+2. I verified that my server works in the normal case using the following
+   request:
+     wget http://localhost:12298
+   It worked successfully!
+
+3. To make my web server crash, I opened one terminal to run the server and
+   found the pid for thttpd using ps aux | grep thttpd, then ran gdb.
+   In gdb, I typed the command
+     (gdb) attach 4316
+   where 4316 was the pid.
+   I then opened a second terminal and sent the crashing request:
+     wget http://localhost:12298/$(python -c 'print "AAAA"*1000')
+
+
+4. After continuing ("c" in gdb), I used the bt command to receieve a traceback
+   of the crash:
+     Program received signal SIGSEGV, Segmentation fault.
+     0x0000003793279ded in _int_malloc () from /lib64/libc.so.6
+     (gdb) bt
+     #0  0x0000003793279ded in _int_malloc () from /lib64/libc.so.6
+     #1  0x000000379327a636 in calloc () from /lib64/libc.so.6
+     #2  0x000000379326f22d in open_memstream () from /lib64/libc.so.6
+     #3  0x00000037932e4c7b in __vsyslog_chk () from /lib64/libc.so.6
+     #4  0x000000379327078e in __libc_message () from /lib64/libc.so.6
+     #5  0x0000003793276166 in malloc_printerr () from /lib64/libc.so.6
+     #6  0x000000379327bc27 in _int_realloc () from /lib64/libc.so.6
+     #7  0x000000379327bde5 in realloc () from /lib64/libc.so.6
+     #8  0x0000000000408b44 in httpd_realloc_str (strP=0x2354b10,
+         maxsizeP=0x2354b18, size=3000) at libhttpd.c:715
+     #9  0x0000000000405984 in handle_read (c=0x7fb412847010,
+         tvP=0x7fff4b7c24a0) at thttpd.c:1596
+     #10 0x0000000000403abd in main (argc=3, argv=0x7fff4b7c3728)
+         at thttpd.c:802
+
+5. The above exploit involves buffer overflow on the heap, not the stack, since
+   the buffer is created using malloc and is part of dynamic memory. The bug in
+   the modified thttpd allows us to overwrite one of the pointers on the heap
+   so that when memory is freed to reallocate the buffer, we could instead
+   jump to a portion of memory with malicious code. If we are smart about our
+   input string and use chars whose hexadecimal representation would correspond
+   to an address, we could examine the code to find out what part of the
+   exploit string is overwriting one of the pointers that free() uses to jump
+   to another part of code and overwrite the address.
+
+6. To generate the assembly code for the two files, I did the following
+   commands:
+     gcc -m32 -c -S -o thttpd-nostackprot.s -fno-stack-protector -I .
+       -I ../ thttpd.c
+     gcc -m32 -c -S -o thttpd-stackprot.s -fstack-protector -I .
+       -I ../ thttpd.c
+   To compare the differences, I created a diff file:
+     diff -u thttpd-nostackprot.s thttpd-stackprot.s > stackprot
+   The code for the stack protector option looks less efficient. This is
+   because you need more code to deal with the canary that is inserted after
+   local variables.
+   
+   To see which functions are called by one version and not the other, I used
+   the following command:
+     diff thttpd-nostackprot.s thttpd-stackprot.s | grep call > stackprot
+   This new file showed that with the stack protector, it calls a function
+   called __stack_chk_fail more. These extra function calls will not prevent
+   an exploit because the buffer is on the heap, not the stack, since it was
+   allocated using malloc instead of being declared as a local variable.
+
+7. To build the patched thttpd with the Address Sanitizer, I used the command
+     make CC="gcc -m32" \
+     CFLAGS="-fsanitize=address -fstack-protector" \
+     LDFLAGS="-Xlinker --rpath=/usr/local/cs/gcc-$(gcc -dumpversion)/lib"
+   Using the same commands that I did before to send the crashing request, I
+   tried sending my exploit again. This time, after continuing, I got the
+   following message in gdb:
+     [Inferior 1 (process 21031) exited with code 01]
+   And when I called backtrace, it said there was no stack.
+   In the terminal where I was sending the exploit, I got a message that the
+   connection had been refused.
+   It appears that the Address Sanitizer recognized that there was overflow and
+   killed the process.
+
+8. To create the assembly language code, I rmoved thttpd.o, edited the Makefile
+   to include the -S tag, then made thttpd.o.
+   I then copied thttpd.o into thttpd-sanitize.s and used the command
+     diff -u thttpd-stackprot.s thttpd-sanitize.s > sanitizeDiff
+   Looking at the sanitizeDiff file, thttpd-sanitize.s adds a lot more
+   commands, so I would think it would be less efficient simply because it must
+   perform more instructions. Using the command
+     diff thttpd-stackprot.s thttpd-sanitize.s | grep call > sanitizeDiff
+   I saw that the sanitized version calls more functions than the other one
+   does.
+
+9. To run my modified web server under valgrind, I recompiled without the m32
+   and AddressSanitizer flags then did the command
+     valgrind --leak-check=yes ./thttpd -p 12298
+   When I sent my crashing request in another terminal, I got the following
+   message in valgrind:
+   
+      ==24531== Syscall param read(buf) points to unaddressable byte(s)
+      ==24531==    at 0x37932DB720: __read_nocancel (in /lib64/libc-2.12.so)
+      ==24531==    by 0x404FD9: main (thttpd.c:1601)
+      ==24531==  Address 0x4c71e51 is 0 bytes after a block of size 2,001
+                 alloc'd
+      ==24531==    at 0x4A06BE0: realloc (vg_replace_malloc.c:662)
+      ==24531==    by 0x406C99: httpd_realloc_str (libhttpd.c:715)
+      ==24531==    by 0x404FB1: main (thttpd.c:1596)
+      ==24531==
+      --24531-- VALGRIND INTERNAL ERROR: Valgrind received a signal 11
+                (SIGSEGV) - exiting si_code=80;  Faulting address: 0x0;
+		sp: 0x402f04de0
+      valgrind: the 'impossible' happened:
+         Killed by fatal signal
+      ==24531==    at 0x3803EC04: vgPlain_arena_malloc (m_mallocfree.c:291)
+      ==24531==    by 0x3800386A: vgMemCheck_realloc (mc_malloc_wrappers.c:490)
+      ==24531==    by 0x3807A0AD: vgPlain_scheduler (scheduler.c:1673)
+      ==24531==    by 0x380A5A19: run_a_thread_NORETURN (syswrap-linux.c:103)
+      sched status:
+        running_tid=1
+      Thread 1: status = VgTs_Runnable
+      ==24531==    at 0x4A06BE0: realloc (vg_replace_malloc.c:662)
+      ==24531==    by 0x406C99: httpd_realloc_str (libhttpd.c:715)
+      ==24531==    by 0x404FB1: main (thttpd.c:1596)
+
+   Valgrind gives information about where the error is occuring and how big
+   the buffer is. It can help us identify where the problem is and how we can
+   use it to our advantage. In this case, the errors deal with allocating
+   memory, which makes sense because the buffer is on the heap.
